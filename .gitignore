@@ -1,2 +1,4 @@
 src/
 archives/
+build/
+__pycache__/
