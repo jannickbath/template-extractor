@@ -36,25 +36,29 @@ def enhanced_parse_env(env_path, archive_dir):
             # Check if value appears to be a function call
             if re.match(r"\w+\(\)", value) and resolver_exists:
                 function_name = value[:-2]
-                result = subprocess.check_output(['bash', '-c', f'source {resolver_path}; {function_name}'], text=True).strip()
                 
-                options = []
-                if result and result not in ["0", "null", "None", ""]:
-                    options.extend(result.split('\n'))
-                options.append("Create new")
-                
-                questions = [{
-                    'type': 'list',
-                    'name': 'selection',
-                    'message': f'Select a value for {key}',
-                    'choices': options
-                }]
-                
-                answer = prompt(questions)
-                if answer['selection'] == "Create new":
-                    env_vars[key] = input(f"Provide a value for {key}: ")
-                else:
-                    env_vars[key] = answer['selection']
+                try:
+                    result = subprocess.check_output(['bash', '-c', f'source {resolver_path}; {function_name}'], text=True, stderr=subprocess.PIPE).strip()
+                    
+                    options = []
+                    if result and result not in ["0", "null", "None", ""]:
+                        options.extend(result.split('\n'))
+                    options.append("Create new")
+                    
+                    questions = [{
+                        'type': 'list',
+                        'name': 'selection',
+                        'message': f'Select a value for {key}',
+                        'choices': options
+                    }]
+                    
+                    answer = prompt(questions)
+                    if answer['selection'] == "Create new":
+                        env_vars[key] = input(f"Provide a value for {key}: ")
+                    else:
+                        env_vars[key] = answer['selection']
+                except subprocess.CalledProcessError:
+                    env_vars[key] = input(f"Function {function_name} not found or error occurred. Provide a value for {key}: ")
             else:
                 env_vars[key] = value.strip()
 
