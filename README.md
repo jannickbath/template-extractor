@@ -1,4 +1,4 @@
-# Template Extracter
+# Template Extractor
 
 ## Overview
 
