@@ -4,6 +4,7 @@ import subprocess
 import shutil
 import re
 from pathlib import Path
+from PyInquirer import prompt
 
 CONFIG_FILE = 'config.txt'
 
@@ -25,17 +26,14 @@ def enhanced_parse_env(env_path):
     
     with open(env_path, 'r') as file:
         for line in file.readlines():
-            # Split only at the first '=' to handle cases where value might be an empty string
             key, value = line.strip().split('=', 1)
             env_vars[key] = value.strip()
     
-    # Check for keys with empty values and prompt the user for input
     for key, value in env_vars.items():
         if not value:
             env_vars[key] = input(f"Provide a value for {key}: ")
 
     return env_vars
-
 
 def replace_placeholders_in_file(file_path, env_vars):
     with open(file_path, 'r') as file:
@@ -68,20 +66,18 @@ def extract_and_run_build_with_temp_archive(zip_file, directory):
         
         return exit_code == 0
 
-def select_from_list(items, message):
-    print(message)
-    for idx, item in enumerate(items, 1):
-        print(f"{idx}. {item}")
-    
-    while True:
-        try:
-            choice = int(input("Enter your choice: "))
-            if 1 <= choice <= len(items):
-                return items[choice-1]
-            else:
-                print("\033[91mInvalid choice. Please select a number from the list.\033[0m")
-        except ValueError:
-            print("\033[91mPlease enter a valid number.\033[0m")
+def modern_select_from_list(items, message):
+    questions = [
+        {
+            'type': 'list',
+            'name': 'selected_item',
+            'message': message,
+            'choices': items
+        }
+    ]
+
+    answers = prompt(questions)
+    return answers['selected_item']
 
 def main():
     try:
@@ -95,7 +91,7 @@ def main():
             print("No .zip archives found in the specified directory.")
             return
         
-        selected_archive = select_from_list(archives, "Select a .zip archive:")
+        selected_archive = modern_select_from_list(archives, "Select a .zip archive:")
 
         with zipfile.ZipFile(os.path.join(directory, selected_archive), 'r') as zip_ref:
             if 'README' in zip_ref.namelist():
