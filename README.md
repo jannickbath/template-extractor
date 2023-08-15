@@ -1,4 +1,4 @@
-# Archive Builder Program
+# Template Extracter
 
 ## Overview
 
@@ -47,3 +47,51 @@ To create an archive:
 2. Optionally, add a `README.md` for a description and any other boilerplate files or directories you wish to include.
 3. Compress the directory into a `.zip` file.
 4. Place the `.zip` file into the archives directory (or any directory you intend to specify when running the program).
+
+## Installation
+
+### Recommended
+
+Install the necessary packages, using pip:
+
+```bash
+$ pip install PyInquirer pathlib rich pyinstaller
+```
+
+Convert the program into a binary, using **pyinstaller**:
+
+```bash
+$ pyinstaller --onefile main.py
+```
+
+Now you should find the binary under `dist/main`.
+
+Copy the binary to `/usr/bin` and rename it as you like:
+
+```bash
+$ cp dist/main /usr/bin/template-extractor
+```
+
+Now you should be able to use the program, everywhere on your machine. Just do:
+
+```bash
+$ template-extractor
+```
+
+You should be prompted to define a directory for the archives.
+
+### Quick Start
+
+Download the `dist/main` file and move it to `/usr/bin/template-extractor`.
+
+```bash
+$ mv dist/main /usr/bin/template-extractor
+```
+
+Now you should be able to use the program, everywhere on your machine. Just do:
+
+```bash
+$ template-extractor
+```
+
+You should be prompted to define a directory for the archives.
