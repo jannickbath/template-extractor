@@ -23,17 +23,44 @@ def load_directory():
 def list_archives(directory):
     return [f for f in os.listdir(directory) if f.endswith('.zip')]
 
-def enhanced_parse_env(env_path):
+def enhanced_parse_env(env_path, archive_dir):
     env_vars = {}
     
+    resolver_path = os.path.join(archive_dir, 'env_resolver.sh')
+    resolver_exists = os.path.exists(resolver_path)
+
     with open(env_path, 'r') as file:
         for line in file.readlines():
             key, value = line.strip().split('=', 1)
-            env_vars[key] = value.strip()
-    
-    for key, value in env_vars.items():
-        if not value:
-            env_vars[key] = input(f"Provide a value for {key}: ")
+            
+            # Check if value appears to be a function call
+            if re.match(r"\w+\(\)", value) and resolver_exists:
+                function_name = value[:-2]
+                result = subprocess.check_output(['bash', '-c', f'source {resolver_path}; {function_name}'], text=True).strip()
+                
+                options = []
+                if result and result not in ["0", "null", "None", ""]:
+                    options.extend(result.split('\n'))
+                options.append("Create new")
+                
+                questions = [{
+                    'type': 'list',
+                    'name': 'selection',
+                    'message': f'Select a value for {key}',
+                    'choices': options
+                }]
+                
+                answer = prompt(questions)
+                if answer['selection'] == "Create new":
+                    env_vars[key] = input(f"Provide a value for {key}: ")
+                else:
+                    env_vars[key] = answer['selection']
+            else:
+                env_vars[key] = value.strip()
+
+            # Existing logic for empty values
+            if not env_vars[key]:
+                env_vars[key] = input(f"Provide a value for {key}: ")
 
     return env_vars
 
@@ -60,7 +87,7 @@ def extract_and_run_build_with_temp_archive(zip_file, directory):
         os.makedirs(ARCHIVE_DIR, exist_ok=True)
         zip_ref.extractall(ARCHIVE_DIR)
         
-        env_vars = enhanced_parse_env(os.path.join(ARCHIVE_DIR, '.env'))
+        env_vars = enhanced_parse_env(os.path.join(ARCHIVE_DIR, '.env'), ARCHIVE_DIR)
         inject_env_values(ARCHIVE_DIR, env_vars)
         
         exit_code = subprocess.call(['sh', f'{ARCHIVE_DIR}/build.sh'])
