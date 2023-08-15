@@ -5,6 +5,8 @@ import shutil
 import re
 from pathlib import Path
 from PyInquirer import prompt
+from rich import print as rprint
+from rich.markdown import Markdown
 
 CONFIG_FILE = 'config.txt'
 
@@ -90,14 +92,26 @@ def main():
         if not archives:
             print("No .zip archives found in the specified directory.")
             return
-        
-        selected_archive = modern_select_from_list(archives, "Select a .zip archive:")
 
-        with zipfile.ZipFile(os.path.join(directory, selected_archive), 'r') as zip_ref:
-            if 'README' in zip_ref.namelist():
-                with zip_ref.open('README') as readme:
-                    print("\nDescription:\n", readme.read().decode('utf-8'))
-                    print("\n", "-"*50, "\n")
+        while True:
+            selected_archive = modern_select_from_list(archives, "Select a .zip archive:")
+
+            with zipfile.ZipFile(os.path.join(directory, selected_archive), 'r') as zip_ref:
+                if 'README.md' in zip_ref.namelist():
+                    with zip_ref.open('README.md') as readme:
+                        markdown_content = readme.read().decode('utf-8')
+                        rprint(Markdown(markdown_content))
+                        print("\n", "-"*50, "\n")
+
+            confirm_question = [{
+                'type': 'confirm',
+                'name': 'proceed',
+                'message': 'Do you want to proceed with this archive?',
+                'default': True
+            }]
+            confirmation = prompt(confirm_question)
+            if confirmation['proceed']:
+                break
         
         success = extract_and_run_build_with_temp_archive(os.path.join(directory, selected_archive), directory)
         if success:
