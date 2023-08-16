@@ -1,4 +1,22 @@
-# Template Extractor
+<h1 align="center">
+  <br>
+  <img src="./assets/template_extractor_big_trans.png" alt="Markdownify" width="400">
+  <br>
+  Template Extractor
+  <br>
+</h1>
+
+<h4 align="center">Dynamic boilerplates enclosed in Archives</h4>
+
+<p align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#archive-structure">Archive Structure</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#creating-an-archive">Creating an Archive</a> •
+  <a href="#installation">Installation</a>
+</p>
+
+![screenshot](./assets/template_extractor_demo.gif)
 
 ## Overview
 
