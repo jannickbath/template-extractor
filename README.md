@@ -1,7 +1,7 @@
 <div align="center">
   <h1>
     <br>
-    <img src="./assets/template_extractor_big_trans.png" alt="Markdownify" width="400">
+    <img src="./assets/template_extractor_big_trans.png" alt="Markdownify" width="650">
     <br>
     Template Extractor
     <br>
