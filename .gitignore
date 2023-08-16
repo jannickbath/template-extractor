@@ -3,3 +3,4 @@ archives/
 build/
 __pycache__/
 config.txt
+main.spec
