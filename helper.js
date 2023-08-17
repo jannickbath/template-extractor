@@ -22,9 +22,22 @@ function appendStringToFile(path, string) {
     fs.appendFileSync(path, string);
 }
 
-function prependStringToFile(path, string) {
+function prependStringToFile(path, stringToInsert, afterString = "") {
     let content = fs.readFileSync(path, 'utf8');
-    content = string + content;
+
+    if (afterString) {
+        const targetIndex = content.indexOf(afterString);
+        
+        if (targetIndex !== -1) {
+            const beforeTarget = content.substring(0, targetIndex + afterString.length);
+            const afterTarget = content.substring(targetIndex + afterString.length);
+            content = beforeTarget + stringToInsert + afterTarget;
+            fs.writeFileSync(path, content);
+            return;
+        }
+    }
+
+    content = stringToInsert + content;
     fs.writeFileSync(path, content);
 }
 
@@ -48,8 +61,17 @@ function listFiles(directory) {
     return fs.readdirSync(directory).filter(file => fs.lstatSync(file).isFile());
 }
 
+function listDirectories(directory) {
+    return fs.readdirSync(directory).filter(file => fs.lstatSync(file).isDirectory());
+}
+
 function readFileContents(path) {
     return fs.readFileSync(path, 'utf8');
+}
+
+function stringExistsInFile(path, searchString) {
+    const content = readFileContents(path);
+    return content.includes(searchString);
 }
 
 function writeFile(path, content) {
@@ -89,5 +111,7 @@ module.exports = {
     exists,
     rename,
     getFileSize,
-    moveFile
+    moveFile,
+    listDirectories,
+    stringExistsInFile
 };
