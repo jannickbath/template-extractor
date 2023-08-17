@@ -25,8 +25,15 @@ def list_archives(directory):
 
 def enhanced_parse_env(env_path, archive_dir):
     env_vars = {}
-    
-    resolver_path = os.path.join(archive_dir, 'env_resolver.sh')
+
+    # Determine the type of resolver
+    if os.path.exists(os.path.join(archive_dir, 'env_resolver.js')):
+        resolver_type = 'js'
+        resolver_path = os.path.join(archive_dir, 'env_resolver.js')
+    else:
+        resolver_type = 'sh'
+        resolver_path = os.path.join(archive_dir, 'env_resolver.sh')
+
     resolver_exists = os.path.exists(resolver_path)
 
     with open(env_path, 'r') as file:
@@ -38,7 +45,16 @@ def enhanced_parse_env(env_path, archive_dir):
                 function_name = value[:-2]
                 
                 try:
-                    result = subprocess.check_output(['bash', '-c', f'source {resolver_path}; {function_name}'], text=True, stderr=subprocess.PIPE).strip()
+                    if resolver_type == 'js':
+                        result = subprocess.check_output(
+                            ['node', '-e', f'const {{ {function_name} }} = require("{resolver_path}"); console.log({function_name}())'],
+                            text=True, stderr=subprocess.PIPE
+                        ).strip()
+                    else:
+                        result = subprocess.check_output(
+                            ['bash', '-c', f'source {resolver_path}; {function_name}'],
+                            text=True, stderr=subprocess.PIPE
+                        ).strip()
                     
                     options = []
                     if result and result not in ["0", "null", "None", ""]:
