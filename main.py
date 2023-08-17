@@ -3,6 +3,7 @@ import zipfile
 import subprocess
 import shutil
 import re
+import sys
 from pathlib import Path
 from PyInquirer import prompt
 from rich import print as rprint
@@ -92,6 +93,16 @@ def replace_placeholders_in_file(file_path, env_vars):
     with open(file_path, 'w') as file:
         file.write(content)
 
+def get_helper_path():
+    if getattr(sys, 'frozen', False):
+        # The application is bundled with PyInstaller
+        base_path = sys._MEIPASS
+    else:
+        # The application is run from a script
+        base_path = os.path.dirname(__file__)
+    
+    return os.path.join(base_path, 'helper.js')
+
 def inject_env_values(temp_dir, env_vars):
     for root, dirs, files in os.walk(temp_dir):
         for file in files:
@@ -108,7 +119,7 @@ def extract_and_run_build_with_temp_archive(zip_file, directory):
         zip_ref.extractall(ARCHIVE_DIR)
 
         # Copy the helper.js file into the archive directory
-        shutil.copy('helper.js', ARCHIVE_DIR)
+        shutil.copy(get_helper_path(), ARCHIVE_DIR)
         
         env_vars = enhanced_parse_env(os.path.join(ARCHIVE_DIR, '.env'), ARCHIVE_DIR)
         inject_env_values(ARCHIVE_DIR, env_vars)
