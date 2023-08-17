@@ -90,11 +90,22 @@ def extract_and_run_build_with_temp_archive(zip_file, directory):
             shutil.rmtree(ARCHIVE_DIR)
         os.makedirs(ARCHIVE_DIR, exist_ok=True)
         zip_ref.extractall(ARCHIVE_DIR)
+
+        # Copy the helper.js file into the archive directory
+        shutil.copy('helper.js', ARCHIVE_DIR)
         
         env_vars = enhanced_parse_env(os.path.join(ARCHIVE_DIR, '.env'), ARCHIVE_DIR)
         inject_env_values(ARCHIVE_DIR, env_vars)
         
-        exit_code = subprocess.call(['sh', f'{ARCHIVE_DIR}/build.sh'])
+        # Check which build file exists and execute accordingly
+        if os.path.exists(f'{ARCHIVE_DIR}/build.js'):
+            exit_code = subprocess.call(['node', f'{ARCHIVE_DIR}/build.js'])
+        elif os.path.exists(f'{ARCHIVE_DIR}/build.sh'):
+            exit_code = subprocess.call(['sh', f'{ARCHIVE_DIR}/build.sh'])
+        else:
+            rprint("[red]Error:[/red] No valid build script (build.js or build.sh) found in the archive.")
+            return False
+        
         shutil.rmtree(ARCHIVE_DIR)
         
         return exit_code == 0
