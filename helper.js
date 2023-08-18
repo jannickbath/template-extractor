@@ -18,27 +18,65 @@ function searchAndReplaceFileContentsRegex(path, regex, replaceString) {
     fs.writeFileSync(path, content);
 }
 
-function appendStringToFile(path, string) {
-    fs.appendFileSync(path, string);
-}
-
-function prependStringToFile(path, stringToInsert, afterString = "") {
+function prependStringToFile(path, stringToInsert) {
     let content = fs.readFileSync(path, 'utf8');
-
-    if (afterString) {
-        const targetIndex = content.indexOf(afterString);
-        
-        if (targetIndex !== -1) {
-            const beforeTarget = content.substring(0, targetIndex + afterString.length);
-            const afterTarget = content.substring(targetIndex + afterString.length);
-            content = beforeTarget + stringToInsert + afterTarget;
-            fs.writeFileSync(path, content);
-            return;
-        }
-    }
-
     content = stringToInsert + content;
     fs.writeFileSync(path, content);
+}
+
+function appendStringToFile(path, stringToInsert) {
+    let content = fs.readFileSync(path, 'utf8');
+    content += stringToInsert;
+    fs.writeFileSync(path, content);
+}
+
+function insertStringBeforeMatch(path, stringToInsert, stringOrRegex) {
+    let content = fs.readFileSync(path, 'utf8');
+    let targetIndex = -1;
+    
+    if (stringOrRegex instanceof RegExp) {
+        const match = content.match(stringOrRegex);
+        if (match) {
+            targetIndex = match.index;
+        }
+    } else {
+        targetIndex = content.indexOf(stringOrRegex);
+    }
+    
+    if (targetIndex !== -1) {
+        const beforeTarget = content.substring(0, targetIndex);
+        const afterTarget = content.substring(targetIndex);
+        content = beforeTarget + stringToInsert + afterTarget;
+        fs.writeFileSync(path, content);
+    } else {
+        throw new Error('Match not found in file content.');
+    }
+}
+
+function insertStringAfterMatch(path, stringToInsert, stringOrRegex) {
+    let content = fs.readFileSync(path, 'utf8');
+    let targetIndex = -1;
+    
+    if (stringOrRegex instanceof RegExp) {
+        const match = content.match(stringOrRegex);
+        if (match) {
+            targetIndex = match.index + match[0].length;
+        }
+    } else {
+        targetIndex = content.indexOf(stringOrRegex);
+        if (targetIndex !== -1) {
+            targetIndex += stringOrRegex.length;
+        }
+    }
+    
+    if (targetIndex !== -1) {
+        const beforeTarget = content.substring(0, targetIndex);
+        const afterTarget = content.substring(targetIndex);
+        content = beforeTarget + stringToInsert + afterTarget;
+        fs.writeFileSync(path, content);
+    } else {
+        throw new Error('Match not found in file content.');
+    }
 }
 
 function searchAndReplaceFileContents(path, matchString, replaceString) {
@@ -69,9 +107,14 @@ function readFileContents(path) {
     return fs.readFileSync(path, 'utf8');
 }
 
-function stringExistsInFile(path, searchString) {
-    const content = readFileContents(path);
-    return content.includes(searchString);
+function stringExistsInFile(path, searchStringOrRegex) {
+    const content = fs.readFileSync(path, 'utf8');
+
+    if (searchStringOrRegex instanceof RegExp) {
+        return searchStringOrRegex.test(content);
+    } else {
+        return content.includes(searchStringOrRegex);
+    }
 }
 
 function writeFile(path, content) {
@@ -113,5 +156,7 @@ module.exports = {
     getFileSize,
     moveFile,
     listDirectories,
-    stringExistsInFile
+    stringExistsInFile,
+    insertStringBeforeMatch,
+    insertStringAfterMatch
 };
