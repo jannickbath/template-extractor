@@ -104,4 +104,35 @@ declare module 'helper' {
      * @param dest - Destination path for the moved file.
      */
     export function moveFile(src: string, dest: string): void;
+
+    /**
+     * Inserts a string before a matched pattern or substring in a file.
+     * @param path - Path of the file.
+     * @param stringToInsert - String to insert before the match.
+     * @param stringOrRegex - Pattern or substring to match.
+     */
+    export function insertStringBeforeMatch(path: string, stringToInsert: string, stringOrRegex: string | RegExp): void;
+
+    /**
+     * Inserts a string after a matched pattern or substring in a file.
+     * @param path - Path of the file.
+     * @param stringToInsert - String to insert after the match.
+     * @param stringOrRegex - Pattern or substring to match.
+     */
+    export function insertStringAfterMatch(path: string, stringToInsert: string, stringOrRegex: string | RegExp): void;
+
+    /**
+     * Lists all directories in a directory.
+     * @param directory - Path of the directory.
+     * @returns Array of directory names.
+     */
+    export function listDirectories(directory: string): string[];
+
+    /**
+     * Checks if a string or pattern exists in a file.
+     * @param path - Path of the file.
+     * @param searchStringOrRegex - Pattern or substring to search for.
+     * @returns True if the string or pattern is found, false otherwise.
+     */
+    export function stringExistsInFile(path: string, searchStringOrRegex: string | RegExp): boolean;
 }
