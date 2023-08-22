@@ -96,11 +96,17 @@ function deletePath(path) {
 }
 
 function listFiles(directory) {
-    return fs.readdirSync(directory).filter(file => fs.lstatSync(file).isFile());
+    return fs.readdirSync(directory).filter(file => {
+        const fullPath = path.join(directory, file);
+        return fs.lstatSync(fullPath).isFile();
+    });
 }
 
 function listDirectories(directory) {
-    return fs.readdirSync(directory).filter(file => fs.lstatSync(file).isDirectory());
+    return fs.readdirSync(directory).filter(file => {
+        const fullPath = path.join(directory, file);
+        return fs.lstatSync(fullPath).isDirectory();
+    });
 }
 
 function readFileContents(path) {
